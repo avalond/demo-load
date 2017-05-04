@@ -4,6 +4,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+/**
+ * load data service
+ */
 public class MyService extends Service {
   public MyService() {
   }
