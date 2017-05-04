@@ -25,7 +25,13 @@
     <service
         android:name=".services.LokobeeService"
         android:enabled="true"
-        android:exported="true"/>
+        android:exported="false"/>
+
+    <provider
+        android:authorities="com.example.kevin.demo.provider"
+        android:name=".provider.LokobeeOrderProvider"
+        android:enabled="true"
+        android:exported="false"/>
   </application>
 
 </manifest>
