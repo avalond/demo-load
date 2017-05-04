@@ -1,5 +1,8 @@
 package com.example.kevin.demo.provider;
 
+import com.example.kevin.demo.database.DatabaseHelper;
+import com.example.kevin.demo.utils.LoggerUtils;
+
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -12,8 +15,14 @@ import android.support.annotation.Nullable;
  */
 
 public class LokobeeOrderProvider extends ContentProvider {
+  private static final String TAG = LokobeeOrderProvider.class.getSimpleName();
+  private DatabaseHelper mDatabaseHelper;
+
+
   @Override public boolean onCreate() {
-    return false;
+    mDatabaseHelper = new DatabaseHelper(getContext());
+    LoggerUtils.d(TAG, "------" + TAG + "---->>db create");
+    return (mDatabaseHelper != null);
   }
 
 
@@ -25,7 +34,11 @@ public class LokobeeOrderProvider extends ContentProvider {
 
 
   @Nullable @Override public String getType(@NonNull Uri uri) {
-    return null;
+      //  switch ()
+
+    return null
+
+        ;
   }
 
 
