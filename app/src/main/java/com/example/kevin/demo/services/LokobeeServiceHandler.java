@@ -30,11 +30,11 @@ public class LokobeeServiceHandler extends Handler {
 
   @Override public void handleMessage(Message msg) {
     switch (msg.what) {
-      case LokobeeService.START:
+      case LokobeeService.START_Get_DATA:
         startGetData();
         break;
       default:
-        throw new IllegalArgumentException("LokobeeServiceHandler handler received unknown message:" + msg.what);
+        break;
     }
   }
 

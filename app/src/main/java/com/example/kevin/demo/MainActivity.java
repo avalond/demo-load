@@ -1,5 +1,6 @@
 package com.example.kevin.demo;
 
+import com.example.kevin.demo.database.DatabaseHelper;
 import com.example.kevin.demo.services.LokobeeService;
 import com.example.kevin.demo.utils.LoggerUtils;
 
@@ -18,13 +19,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
   private static final String TAG = MainActivity.class.getSimpleName();
   private Intent intent;
   private LokobeeService.myLocalIbind mLocalIbind = null;
+  private static final int UPDATE_DATA = 0x12;
+  private static final int GET_ALL_DATA = 0x2;
 
-
-  @Override protected void onStart() {
-    super.onStart();
-    intent = new Intent(MainActivity.this, LokobeeService.class);
-    startService(intent);
-  }
 
 
   @Override
@@ -33,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     setContentView(R.layout.activity_main);
 
     //
+
+    // loader manger
     getSupportLoaderManager().initLoader(1, null, this);
   }
 
@@ -61,37 +60,48 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
   @Override protected void onResume() {
     super.onResume();
-    bindService(new Intent(this, LokobeeService.class), this, Context.BIND_AUTO_CREATE);
+    LoggerUtils.d(TAG, "onResume");
+    intent = new Intent(MainActivity.this, LokobeeService.class);
+    bindService(intent, this, Context.BIND_AUTO_CREATE);
+    if (mLocalIbind != null) {
+      mLocalIbind.getLokobeeService().getAllOrder(GET_ALL_DATA);
+    }
   }
 
 
   @Override protected void onRestart() {
     super.onRestart();
     intent = new Intent(MainActivity.this, LokobeeService.class);
-    startService(intent);
+    bindService(intent, this, Context.BIND_AUTO_CREATE);
+    LoggerUtils.d(TAG, "onRestart");
   }
 
 
   @Override protected void onStop() {
     super.onStop();
-
-    stopService(new Intent(MainActivity.this, LokobeeService.class));
+    intent = new Intent(MainActivity.this, LokobeeService.class);
+    stopService(intent);
     unbindService(this);
+    LoggerUtils.d(TAG, "onStop");
   }
 
 
   @Override protected void onDestroy() {
     super.onDestroy();
     stopService(intent);
+    unbindService(this);
+    LoggerUtils.d(TAG, "onDestroy");
   }
 
 
   @Override public void onServiceConnected(ComponentName name, IBinder service) {
-
+    // services 链接上以后
+    mLocalIbind = (LokobeeService.myLocalIbind) service;
+    mLocalIbind.getLokobeeService().getAllOrder(GET_ALL_DATA);
   }
 
 
   @Override public void onServiceDisconnected(ComponentName name) {
-
+    // service 断开连接
   }
 }

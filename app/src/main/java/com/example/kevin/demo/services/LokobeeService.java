@@ -1,10 +1,12 @@
 package com.example.kevin.demo.services;
 
+import com.example.kevin.demo.TestApplication;
 import com.example.kevin.demo.utils.LoggerUtils;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
@@ -23,10 +25,8 @@ public class LokobeeService extends Service {
   private LokobeeServiceHandler mWorkerHandler;
 
   public static final int START = 0x1;
-
-
-  public LokobeeService() {
-  }
+  public static final int START_Get_DATA = 0x2;
+  public static final int DELETE_ORDER = 0x3;
 
 
   @Override public void onCreate() {
@@ -36,7 +36,7 @@ public class LokobeeService extends Service {
     workerThread.start();
 
     mWorkerLooper = workerThread.getLooper();
-    mWorkerHandler = new LokobeeServiceHandler(mWorkerLooper, getApplication());
+    mWorkerHandler = new LokobeeServiceHandler(mWorkerLooper, TestApplication.getApplication());
   }
 
 
@@ -76,5 +76,25 @@ public class LokobeeService extends Service {
     public LokobeeService getLokobeeService() {
       return LokobeeService.this;
     }
+  }
+
+
+  public void deleteOrderWithId(String orderId) {
+    Message message = mWorkerHandler.obtainMessage();
+    message.what = LokobeeService.DELETE_ORDER;
+    Bundle bundle = new Bundle();
+    bundle.putString("ordrId", orderId);
+    message.setData(bundle);
+    mWorkerHandler.sendMessage(message);
+  }
+
+
+  public void getAllOrder(int type) {
+    Message msg = mWorkerHandler.obtainMessage();
+    msg.what = LokobeeService.START_Get_DATA;
+    Bundle data = new Bundle();
+    data.putInt("type", type);
+    msg.setData(data);
+    mWorkerHandler.sendMessage(msg);
   }
 }
