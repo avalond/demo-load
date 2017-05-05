@@ -72,7 +72,7 @@ public class LokobeeService extends Service {
   }
 
 
-  private class myLocalIbind extends Binder {
+  public class myLocalIbind extends Binder {
     public LokobeeService getLokobeeService() {
       return LokobeeService.this;
     }

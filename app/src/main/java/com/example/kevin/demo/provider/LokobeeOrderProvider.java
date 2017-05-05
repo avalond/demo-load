@@ -17,6 +17,14 @@ import android.support.annotation.Nullable;
 public class LokobeeOrderProvider extends ContentProvider {
   private static final String TAG = LokobeeOrderProvider.class.getSimpleName();
   private DatabaseHelper mDatabaseHelper;
+  private static final String AUTHORITY = "com.example.kevin.demo.provider";
+  private static final Uri AUTHPRITY_URI = Uri.parse("content://" + AUTHORITY);
+
+  //uri
+  public static final String ORDER_TABLE_CONTENT_PATH = "order_details";
+  public static final Uri ORDER_CONTEXT_URI = Uri.withAppendedPath(AUTHPRITY_URI, ORDER_TABLE_CONTENT_PATH);
+
+
 
 
   @Override public boolean onCreate() {
@@ -34,11 +42,9 @@ public class LokobeeOrderProvider extends ContentProvider {
 
 
   @Nullable @Override public String getType(@NonNull Uri uri) {
-      //  switch ()
+    //  switch ()
 
-    return null
-
-        ;
+    return null;
   }
 
 
