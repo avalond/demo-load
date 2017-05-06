@@ -1,8 +1,6 @@
 package com.example.kevin.demo.ui;
 
 import com.example.kevin.demo.R;
-import com.example.kevin.demo.database.LokobeeDatabaseTable;
-import com.example.kevin.demo.modle.Order;
 import com.example.kevin.demo.provider.LokobeeOrderProvider;
 import com.example.kevin.demo.services.LokobeeService;
 import com.example.kevin.demo.ui.adapter.BaseCursorRecyclerViewAdapter;
@@ -59,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     //  mRecyclerView.setItemAnimator(new DefaultItemAnimator());
     //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
     mRecyclerView.setHasFixedSize(true);
-    mAdapter = new OrderCursorAdapter(this, new OrderClickItem());
+    mAdapter = new OrderCursorAdapter(this, new ItemClick(), null);
     mRecyclerView.setAdapter(mAdapter);
   }
 
@@ -146,17 +144,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
   }
 
 
-  private class OrderClickItem implements BaseCursorRecyclerViewAdapter.ItemClickListener<OrderCursorAdapter.OrderCursorItemViewHolder> {
-
+  private class ItemClick implements BaseCursorRecyclerViewAdapter.ItemClickListener<OrderCursorAdapter.OrderCursorItemViewHolder> {
     @Override public void onClick(OrderCursorAdapter.OrderCursorItemViewHolder holder, View view, int position) {
       if (view == holder.mButton) {
-        LoggerUtils.e(TAG, "click ");
-
-        LoggerUtils.e(TAG, "mAdapter.getItemId(position);" + mAdapter.getItemId(position));
-
-        LoggerUtils.e(TAG, "------>>" + mCursor.getString(mCursor.getColumnIndex((LokobeeDatabaseTable.COLUMN_ORDER_ID))));
-        String orderId = "";
-        mLocalIbind.getLokobeeService().deleteOrderWithId(orderId);
+        LoggerUtils.e(TAG, "----- clicked delete button ");
       }
     }
 

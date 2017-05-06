@@ -2,6 +2,7 @@ package com.example.kevin.demo.ui.adapter;
 
 import com.example.kevin.demo.R;
 import com.example.kevin.demo.database.LokobeeDatabaseTable;
+import com.example.kevin.demo.services.LokobeeService;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -17,8 +18,12 @@ import android.widget.TextView;
  */
 
 public class OrderCursorAdapter extends BaseCursorRecyclerViewAdapter<OrderCursorAdapter.OrderCursorItemViewHolder> {
-  public OrderCursorAdapter(Context context, ItemClickListener listener) {
+  private LokobeeService.myLocalIbind mLocalIbind;
+
+
+  public OrderCursorAdapter(Context context, ItemClickListener listener, LokobeeService.myLocalIbind localIbind) {
     super(context, null, listener);
+    this.mLocalIbind = localIbind;
   }
 
 
@@ -36,6 +41,12 @@ public class OrderCursorAdapter extends BaseCursorRecyclerViewAdapter<OrderCurso
   @Override public void onBindViewHolder(OrderCursorItemViewHolder viewHolder, final Cursor cursor) {
     cursor.moveToPosition(cursor.getPosition());
     viewHolder.setData(cursor);
+    // viewHolder.mButton.setOnClickListener(new View.OnClickListener() {
+    //   @Override public void onClick(View v) {
+    //     String orderId = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_ID));
+    //     mLocalIbind.getLokobeeService().deleteOrderWithId(orderId);
+    //   }
+    // });
   }
 
 
