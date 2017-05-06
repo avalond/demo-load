@@ -1,5 +1,6 @@
 package com.example.kevin.demo.services;
 
+import com.example.kevin.demo.database.LokobeeDatabaseTable;
 import com.example.kevin.demo.modle.BaseResponse;
 import com.example.kevin.demo.modle.GetUnFinishedOrderByUser;
 import com.example.kevin.demo.modle.Order;
@@ -41,6 +42,9 @@ public class LokobeeServiceHandler extends Handler {
     switch (msg.what) {
       case LokobeeService.START_Get_DATA:
         startGetData();
+        break;
+      case LokobeeService.DELETE_ORDER:
+        deleteOrderWithId(msg);
         break;
       default:
         break;
@@ -92,6 +96,15 @@ public class LokobeeServiceHandler extends Handler {
       }
     }
     return newlist;
+  }
+
+
+  public void deleteOrderWithId(Message message) {
+    String orderId = message.getData().getString("orderId");
+    //send server delete if server back message is ok, delete with database
+
+    Uri uri = getContentUri();
+    mContext.getContentResolver().delete(uri, LokobeeDatabaseTable.COLUMN_ORDER_ID + "=?", new String[] { orderId });
   }
 
 

@@ -82,7 +82,7 @@ public class LokobeeService extends Service {
     Message message = mWorkerHandler.obtainMessage();
     message.what = LokobeeService.DELETE_ORDER;
     Bundle bundle = new Bundle();
-    bundle.putString("ordrId", orderId);
+    bundle.putString("orderId", orderId);
     message.setData(bundle);
     mWorkerHandler.sendMessage(message);
   }

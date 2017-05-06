@@ -13,7 +13,7 @@ public class LokobeeDatabaseTable {
   // SQLite database table name
   public static final String ORDER_TABLE_NAME = "order_table";
   //
-  //// order Colm
+  //// order Column
   public static final String COLUMN_ID = "_id";//sqlite id
   public static final String COLUMN_ORDER_ID = "id";
   public static final String COLUMN_ORDER_STATUS = "order_status";

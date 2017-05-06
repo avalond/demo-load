@@ -2,13 +2,12 @@ package com.example.kevin.demo.ui;
 
 import com.example.kevin.demo.R;
 import com.example.kevin.demo.database.LokobeeDatabaseTable;
+import com.example.kevin.demo.modle.Order;
 import com.example.kevin.demo.provider.LokobeeOrderProvider;
 import com.example.kevin.demo.services.LokobeeService;
+import com.example.kevin.demo.ui.adapter.BaseCursorRecyclerViewAdapter;
+import com.example.kevin.demo.ui.adapter.OrderCursorAdapter;
 import com.example.kevin.demo.utils.LoggerUtils;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -23,6 +22,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, ServiceConnection {
   private static final String TAG = MainActivity.class.getSimpleName();
@@ -31,13 +31,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
   ///
   private RecyclerView mRecyclerView;
   private LinearLayoutManager mLayoutManager;
-  private OrderItemAdapter mAdapter;
+  private OrderCursorAdapter mAdapter;
 
   private LokobeeService.myLocalIbind mLocalIbind = null;
   private static final int UPDATE_DATA = 0x12;
   private static final int GET_ALL_DATA = 0x2;
-  private List<Map<String, String>> mOrderListMapList;
-
+  private Cursor mCursor;
   //
 
 
@@ -46,8 +45,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     initView();
-    //
-    mOrderListMapList = new ArrayList<>();
     // loader manger
     getSupportLoaderManager().initLoader(1, null, this);
   }
@@ -59,9 +56,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     mLayoutManager = new LinearLayoutManager(this);
     mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
     mRecyclerView.setLayoutManager(mLayoutManager);
-  //  mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+    //  mRecyclerView.setItemAnimator(new DefaultItemAnimator());
     //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
     mRecyclerView.setHasFixedSize(true);
+    mAdapter = new OrderCursorAdapter(this, new OrderClickItem());
+    mRecyclerView.setAdapter(mAdapter);
   }
 
 
@@ -88,30 +87,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
       LoggerUtils.d(TAG, "Cursor is empty");
     } else {
       //set data and add to list view
-      mOrderListMapList.clear();
-      while (cursor.moveToNext()) {
-        LoggerUtils.d(TAG, "------");
-        Map<String, String> map = new HashMap<>();
-        String id = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ID));
-        String orderId = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_ID));
-        String orderStatus = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_STATUS));
-        String orderNote = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_NOTE));
-
-        map.put("id", id);
-        map.put("orderId", orderId);
-        map.put("orderStatus", orderStatus);
-        map.put("orderNote", orderNote);
-        mOrderListMapList.add(map);
-      }
-      mAdapter = new OrderItemAdapter(this);
-      mRecyclerView.setAdapter(mAdapter);
-      mAdapter.bindData(mOrderListMapList);
+      mAdapter.changeCursor(cursor);
+      mCursor = cursor;
     }
   }
 
 
   @Override public void onLoaderReset(Loader<Cursor> loader) {
-
+    mAdapter.swapCursor(null);
   }
 
 
@@ -146,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
   @Override protected void onDestroy() {
     super.onDestroy();
     stopService(intent);
-    unbindService(this);
+
     LoggerUtils.d(TAG, "onDestroy");
   }
 
@@ -160,5 +143,26 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
   @Override public void onServiceDisconnected(ComponentName name) {
     // service 断开连接
+  }
+
+
+  private class OrderClickItem implements BaseCursorRecyclerViewAdapter.ItemClickListener<OrderCursorAdapter.OrderCursorItemViewHolder> {
+
+    @Override public void onClick(OrderCursorAdapter.OrderCursorItemViewHolder holder, View view, int position) {
+      if (view == holder.mButton) {
+        LoggerUtils.e(TAG, "click ");
+
+        LoggerUtils.e(TAG, "mAdapter.getItemId(position);" + mAdapter.getItemId(position));
+
+        LoggerUtils.e(TAG, "------>>" + mCursor.getString(mCursor.getColumnIndex((LokobeeDatabaseTable.COLUMN_ORDER_ID))));
+        String orderId = "";
+        mLocalIbind.getLokobeeService().deleteOrderWithId(orderId);
+      }
+    }
+
+
+    @Override public void onItemClick(OrderCursorAdapter.OrderCursorItemViewHolder holder, View view, int position) {
+
+    }
   }
 }
