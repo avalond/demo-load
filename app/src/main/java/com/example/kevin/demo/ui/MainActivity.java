@@ -1,6 +1,6 @@
-package com.example.kevin.demo;
+package com.example.kevin.demo.ui;
 
-import com.example.kevin.demo.database.DatabaseHelper;
+import com.example.kevin.demo.R;
 import com.example.kevin.demo.services.LokobeeService;
 import com.example.kevin.demo.utils.LoggerUtils;
 
@@ -14,25 +14,47 @@ import android.os.IBinder;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, ServiceConnection {
   private static final String TAG = MainActivity.class.getSimpleName();
   private Intent intent;
+
+  ///
+  private RecyclerView mRecyclerView;
+  private RecyclerView.LayoutManager mLayoutManager;
+  private OrderItemAdapter mAdapter;
+
   private LokobeeService.myLocalIbind mLocalIbind = null;
   private static final int UPDATE_DATA = 0x12;
   private static final int GET_ALL_DATA = 0x2;
 
+  //
 
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-
+    initView();
     //
 
     // loader manger
     getSupportLoaderManager().initLoader(1, null, this);
+  }
+
+
+  private void initView() {
+    mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+    //创建默认的线性LayoutManager
+    mLayoutManager = new LinearLayoutManager(this);
+    mRecyclerView.setLayoutManager(mLayoutManager);
+    //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
+    mRecyclerView.setHasFixedSize(true);
+    //创建并设置Adapter
+    mAdapter = new OrderItemAdapter(this);
+    mRecyclerView.setAdapter(mAdapter);
   }
 
 
@@ -44,8 +66,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
   }
 
 
-  @Override public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-    if (data == null) {
+  @Override public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+    if (cursor == null) {
       LoggerUtils.d(TAG, "Cursor is empty");
     } else {
       //set data and add to list view

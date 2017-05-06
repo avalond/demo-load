@@ -1,7 +1,10 @@
 package com.example.kevin.demo.provider;
 
 import com.example.kevin.demo.database.DatabaseHelper;
+import com.example.kevin.demo.database.LokobeeDatabaseTable;
+import com.example.kevin.demo.modle.Order;
 import com.example.kevin.demo.utils.LoggerUtils;
+import java.util.List;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -25,12 +28,24 @@ public class LokobeeOrderProvider extends ContentProvider {
   public static final Uri ORDER_CONTEXT_URI = Uri.withAppendedPath(AUTHPRITY_URI, ORDER_TABLE_CONTENT_PATH);
 
 
-
-
   @Override public boolean onCreate() {
     mDatabaseHelper = new DatabaseHelper(getContext());
     LoggerUtils.d(TAG, "------" + TAG + "---->>db create");
     return (mDatabaseHelper != null);
+  }
+
+
+  public static ContentValues OrderContentValues(List<Order> orderList) {
+    ContentValues values = new ContentValues();
+    for (Order order : orderList) {
+      values.put(LokobeeDatabaseTable.COLUMN_ORDER_id, order.getId());
+      values.put(LokobeeDatabaseTable.COLUMN_UUID, order.getUuid());
+      values.put(LokobeeDatabaseTable.COLUMN_TYPE, order.getType());
+      values.put(LokobeeDatabaseTable.COLUMN_ORDER_STATUS, order.getOrderStatus());
+      values.put(LokobeeDatabaseTable.COLUMN_ORDER_NOTE, order.getNote());
+    }
+    LoggerUtils.d(TAG, "OrderContentValues-----");
+    return values;
   }
 
 

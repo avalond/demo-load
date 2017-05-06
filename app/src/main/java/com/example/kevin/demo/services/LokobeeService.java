@@ -1,6 +1,5 @@
 package com.example.kevin.demo.services;
 
-import com.example.kevin.demo.TestApplication;
 import com.example.kevin.demo.utils.LoggerUtils;
 
 import android.app.Service;
@@ -36,7 +35,7 @@ public class LokobeeService extends Service {
     workerThread.start();
 
     mWorkerLooper = workerThread.getLooper();
-    mWorkerHandler = new LokobeeServiceHandler(mWorkerLooper, TestApplication.getApplication());
+    mWorkerHandler = new LokobeeServiceHandler(mWorkerLooper, getApplicationContext());
   }
 
 
