@@ -7,8 +7,13 @@ import com.example.kevin.demo.utils.LoggerUtils;
 import java.util.List;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,6 +32,18 @@ public class LokobeeOrderProvider extends ContentProvider {
   public static final String ORDER_TABLE_CONTENT_PATH = "order_details";
   public static final Uri ORDER_CONTEXT_URI = Uri.withAppendedPath(AUTHPRITY_URI, ORDER_TABLE_CONTENT_PATH);
 
+  //order
+  public static final String ORDER_CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/order_details";
+
+  //uri Matcher
+  private static final int ORDER_TABLE_ALL = 1;
+  private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
+
+
+  static {
+    URI_MATCHER.addURI(AUTHORITY, ORDER_TABLE_CONTENT_PATH, ORDER_TABLE_ALL);
+  }
+
 
   @Override public boolean onCreate() {
     mDatabaseHelper = new DatabaseHelper(getContext());
@@ -44,22 +61,50 @@ public class LokobeeOrderProvider extends ContentProvider {
       values.put(LokobeeDatabaseTable.COLUMN_ORDER_STATUS, order.getOrderStatus());
       values.put(LokobeeDatabaseTable.COLUMN_ORDER_NOTE, order.getNote());
     }
-    LoggerUtils.d(TAG, "OrderContentValues-----");
     return values;
+  }
+
+
+  @Nullable @Override public String getType(@NonNull Uri uri) {
+    switch (URI_MATCHER.match(uri)) {
+      case ORDER_TABLE_ALL:
+        return ORDER_CONTENT_TYPE;
+      default:
+        LoggerUtils.e(TAG, "Unsupported uri" + uri);
+        throw new IllegalArgumentException("Unsupported uri" + uri);
+    }
+  }
+
+
+  private long insertIfNotExists(SQLiteDatabase db, String tableName, ContentValues values) {
+    long id;
+    try {
+      id = db.insertOrThrow(tableName, null, values);
+    } catch (SQLiteConstraintException e) {
+      id = -1;
+      LoggerUtils.e(TAG, "SQLiteConstraintException ---->>" + e.getLocalizedMessage());
+    }
+    return id;
   }
 
 
   @Nullable @Override
   public Cursor query(
       @NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
-    return null;
-  }
+    SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-
-  @Nullable @Override public String getType(@NonNull Uri uri) {
-    //  switch ()
-
-    return null;
+    switch (URI_MATCHER.match(uri)) {
+      case ORDER_TABLE_ALL:
+        queryBuilder.setTables(LokobeeDatabaseTable.ORDER_TABLE_NAME);
+        break;
+      default:
+        LoggerUtils.e(TAG, "Unknown URI : " + uri);
+        throw new IllegalArgumentException("Unknown URI : " + uri);
+    }
+    SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
+    Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+    cursor.setNotificationUri(getContext().getContentResolver(), uri);
+    return cursor;
   }
 
 

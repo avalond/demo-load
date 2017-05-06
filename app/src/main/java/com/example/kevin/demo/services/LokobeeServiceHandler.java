@@ -72,7 +72,6 @@ public class LokobeeServiceHandler extends Handler {
     mContext.getContentResolver().delete(contentUri, null, null);
     ContentValues contentValues = LokobeeOrderProvider.OrderContentValues(orderList);
     mContext.getContentResolver().insert(contentUri, contentValues);
-    LoggerUtils.d(TAG,"---------");
   }
 
 

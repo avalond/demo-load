@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 public class LokobeeDatabaseTable {
   private static final String TAG = LokobeeDatabaseTable.class.getSimpleName();
   // SQLite database table name
-  private static final String ORDER_TABLE_NAME = "order_table";
+  public static final String ORDER_TABLE_NAME = "order_table";
   //
   //// order Colm
   public static final String COLUMN_ID = "_id";//sqlite id
@@ -22,18 +22,18 @@ public class LokobeeDatabaseTable {
   public static final String COLUMN_ORDER_NOTE = "order_note";
 
   //
-  private static final String ORDER_TABLE_CRATE = "("
-      + COLUMN_ID + "integer primary key autoincrement,"
-      + COLUMN_ORDER_id + "text not null,"
-      + COLUMN_UUID + "text,"
-      + COLUMN_TYPE + "text,"
-      + COLUMN_ORDER_STATUS + "text,"
-      + COLUMN_ORDER_NOTE + "text,"
+  private static final String ORDER_TABLE_CRATE = " ("
+      + COLUMN_ID + " integer primary key autoincrement, "
+      + COLUMN_ORDER_id + " text not null, "
+      + COLUMN_UUID + " text, "
+      + COLUMN_TYPE + " text, "
+      + COLUMN_ORDER_STATUS + " text, "
+      + COLUMN_ORDER_NOTE + " text, "
       + "UNIQUE(" + COLUMN_UUID + ")"
       + ");";
 
   //create table
-  private static final String ORDER_TABLE_CREATE_STATEMENT = "create table" + ORDER_TABLE_NAME + ORDER_TABLE_CRATE;
+  private static final String ORDER_TABLE_CREATE_STATEMENT = "create table " + ORDER_TABLE_NAME + ORDER_TABLE_CRATE;
 
 
   public static void onCreate(SQLiteDatabase db) {

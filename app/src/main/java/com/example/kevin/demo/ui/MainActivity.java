@@ -1,11 +1,18 @@
 package com.example.kevin.demo.ui;
 
 import com.example.kevin.demo.R;
+import com.example.kevin.demo.database.LokobeeDatabaseTable;
+import com.example.kevin.demo.provider.LokobeeOrderProvider;
 import com.example.kevin.demo.services.LokobeeService;
 import com.example.kevin.demo.utils.LoggerUtils;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import android.content.ComponentName;
 import android.content.Context;
+
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -13,6 +20,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
   private LokobeeService.myLocalIbind mLocalIbind = null;
   private static final int UPDATE_DATA = 0x12;
   private static final int GET_ALL_DATA = 0x2;
+  private List<Map<String, String>> mOrderListMapList;
 
   //
 
@@ -39,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     setContentView(R.layout.activity_main);
     initView();
     //
-
+    mOrderListMapList = new ArrayList<>();
     // loader manger
     getSupportLoaderManager().initLoader(1, null, this);
   }
@@ -52,17 +61,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     mRecyclerView.setLayoutManager(mLayoutManager);
     //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
     mRecyclerView.setHasFixedSize(true);
-    //创建并设置Adapter
-    mAdapter = new OrderItemAdapter(this);
-    mRecyclerView.setAdapter(mAdapter);
   }
 
 
   @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     ///
-    // CursorLoader loader = new CursorLoader(this, LokobeeOrderProvider.ORDER_CONTEXT_URI, null, null, null);
-    //  return loader;
-    return null;
+
+    CursorLoader loader = new CursorLoader(this, LokobeeOrderProvider.ORDER_CONTEXT_URI, null,
+        LokobeeDatabaseTable.COLUMN_ID + "=? AND " + LokobeeDatabaseTable.COLUMN_ORDER_id + "=?",
+        new String[] { LokobeeDatabaseTable.COLUMN_ID, LokobeeDatabaseTable.COLUMN_ORDER_id },
+        LokobeeDatabaseTable.COLUMN_ORDER_id);
+    return loader;
   }
 
 
@@ -71,6 +80,29 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
       LoggerUtils.d(TAG, "Cursor is empty");
     } else {
       //set data and add to list view
+      mOrderListMapList.clear();
+      while (cursor.moveToNext()) {
+        Map<String, String> map = new HashMap<>();
+        String id = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ID));
+        String orderId = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_id));
+        String orderUUId = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_UUID));
+        String orderType = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_TYPE));
+        String orderStatus = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_STATUS));
+        String orderNote = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_NOTE));
+
+        map.put("id", id);
+        map.put("orderId", orderId);
+        map.put("orderUUId", orderUUId);
+        map.put("orderType", orderType);
+        map.put("orderStatus", orderStatus);
+        map.put("orderNote", orderNote);
+        mOrderListMapList.add(map);
+        LoggerUtils.d(TAG, "mOrderListMapList size--->>" + mOrderListMapList.size());
+      }
+      //创建并设置Adapter
+      mAdapter = new OrderItemAdapter(this, mOrderListMapList);
+      mRecyclerView.setAdapter(mAdapter);
+      mAdapter.notifyDataSetChanged();
     }
   }
 
