@@ -12,15 +12,14 @@ import java.util.Map;
 
 import android.content.ComponentName;
 import android.content.Context;
-
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
   ///
   private RecyclerView mRecyclerView;
-  private RecyclerView.LayoutManager mLayoutManager;
+  private LinearLayoutManager mLayoutManager;
   private OrderItemAdapter mAdapter;
 
   private LokobeeService.myLocalIbind mLocalIbind = null;
@@ -58,7 +57,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
     //创建默认的线性LayoutManager
     mLayoutManager = new LinearLayoutManager(this);
+    mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
     mRecyclerView.setLayoutManager(mLayoutManager);
+  //  mRecyclerView.setItemAnimator(new DefaultItemAnimator());
     //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
     mRecyclerView.setHasFixedSize(true);
   }
@@ -67,10 +68,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
   @Override public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     ///
 
-    CursorLoader loader = new CursorLoader(this, LokobeeOrderProvider.ORDER_CONTEXT_URI, null,
-        LokobeeDatabaseTable.COLUMN_ID + "=? AND " + LokobeeDatabaseTable.COLUMN_ORDER_id + "=?",
-        new String[] { LokobeeDatabaseTable.COLUMN_ID, LokobeeDatabaseTable.COLUMN_ORDER_id },
-        LokobeeDatabaseTable.COLUMN_ORDER_id);
+    CursorLoader loader = new CursorLoader(this,
+        LokobeeOrderProvider.ORDER_CONTEXT_URI, //uri
+        null,  // Projection
+        null, //Selection
+        null, //SelectionArgs
+        null);// SortOrder
+
+    /////
+    LoggerUtils.e(TAG,
+        "uri-->" + loader.getUri() + "--projection--" + loader.getProjection() + "--selection--" + loader.getSelection() + "--selectionArgs--" +
+            loader.getSelectionArgs() + "--sortOrder--" + loader.getSortOrder());
     return loader;
   }
 
@@ -82,27 +90,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
       //set data and add to list view
       mOrderListMapList.clear();
       while (cursor.moveToNext()) {
+        LoggerUtils.d(TAG, "------");
         Map<String, String> map = new HashMap<>();
         String id = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ID));
-        String orderId = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_id));
-        String orderUUId = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_UUID));
-        String orderType = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_TYPE));
+        String orderId = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_ID));
         String orderStatus = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_STATUS));
         String orderNote = cursor.getString(cursor.getColumnIndex(LokobeeDatabaseTable.COLUMN_ORDER_NOTE));
 
         map.put("id", id);
         map.put("orderId", orderId);
-        map.put("orderUUId", orderUUId);
-        map.put("orderType", orderType);
         map.put("orderStatus", orderStatus);
         map.put("orderNote", orderNote);
         mOrderListMapList.add(map);
-        LoggerUtils.d(TAG, "mOrderListMapList size--->>" + mOrderListMapList.size());
       }
-      //创建并设置Adapter
-      mAdapter = new OrderItemAdapter(this, mOrderListMapList);
+      mAdapter = new OrderItemAdapter(this);
       mRecyclerView.setAdapter(mAdapter);
-      mAdapter.notifyDataSetChanged();
+      mAdapter.bindData(mOrderListMapList);
     }
   }
 

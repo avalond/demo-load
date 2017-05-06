@@ -4,10 +4,10 @@ import com.example.kevin.demo.database.DatabaseHelper;
 import com.example.kevin.demo.database.LokobeeDatabaseTable;
 import com.example.kevin.demo.modle.Order;
 import com.example.kevin.demo.utils.LoggerUtils;
-import java.util.List;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -17,6 +17,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 /**
  * @author by kevin.
@@ -34,14 +35,17 @@ public class LokobeeOrderProvider extends ContentProvider {
 
   //order
   public static final String ORDER_CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/order_details";
+  public static final String ORDER_CONTENT_ITEM_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/order_details_one";
 
   //uri Matcher
-  private static final int ORDER_TABLE_ALL = 1;
+  private static final int ORDER_TABLE_ALL = 1; //all
+  private static final int ORDER_TABLE_ITEM_ONE = 2;//one
   private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 
 
   static {
     URI_MATCHER.addURI(AUTHORITY, ORDER_TABLE_CONTENT_PATH, ORDER_TABLE_ALL);
+    URI_MATCHER.addURI(AUTHORITY, ORDER_TABLE_CONTENT_PATH + "/#", ORDER_TABLE_ITEM_ONE);
   }
 
 
@@ -52,15 +56,13 @@ public class LokobeeOrderProvider extends ContentProvider {
   }
 
 
-  public static ContentValues OrderContentValues(List<Order> orderList) {
+  public static ContentValues OrderContentValues(Order order) {
     ContentValues values = new ContentValues();
-    for (Order order : orderList) {
-      values.put(LokobeeDatabaseTable.COLUMN_ORDER_id, order.getId());
-      values.put(LokobeeDatabaseTable.COLUMN_UUID, order.getUuid());
-      values.put(LokobeeDatabaseTable.COLUMN_TYPE, order.getType());
-      values.put(LokobeeDatabaseTable.COLUMN_ORDER_STATUS, order.getOrderStatus());
-      values.put(LokobeeDatabaseTable.COLUMN_ORDER_NOTE, order.getNote());
-    }
+    values.put(LokobeeDatabaseTable.COLUMN_ORDER_ID, order.getId());
+    values.put(LokobeeDatabaseTable.COLUMN_ORDER_STATUS, order.getOrderStatus());
+    values.put(LokobeeDatabaseTable.COLUMN_ORDER_NOTE, order.getNote());
+    values.put(LokobeeDatabaseTable.COLUMN_ORDER_EXPECT_TIME, order.getExpectTime());
+
     return values;
   }
 
@@ -69,8 +71,10 @@ public class LokobeeOrderProvider extends ContentProvider {
     switch (URI_MATCHER.match(uri)) {
       case ORDER_TABLE_ALL:
         return ORDER_CONTENT_TYPE;
+      case ORDER_TABLE_ITEM_ONE:
+        return ORDER_CONTENT_ITEM_TYPE;
       default:
-        LoggerUtils.e(TAG, "Unsupported uri" + uri);
+        LoggerUtils.e(TAG, "get type Unsupported uri" + uri);
         throw new IllegalArgumentException("Unsupported uri" + uri);
     }
   }
@@ -82,7 +86,7 @@ public class LokobeeOrderProvider extends ContentProvider {
       id = db.insertOrThrow(tableName, null, values);
     } catch (SQLiteConstraintException e) {
       id = -1;
-      LoggerUtils.e(TAG, "SQLiteConstraintException ---->>" + e.getLocalizedMessage());
+      LoggerUtils.e(TAG, "insertIfNotExists function SQLiteConstraintException ---->>" + e.getLocalizedMessage());
     }
     return id;
   }
@@ -97,8 +101,14 @@ public class LokobeeOrderProvider extends ContentProvider {
       case ORDER_TABLE_ALL:
         queryBuilder.setTables(LokobeeDatabaseTable.ORDER_TABLE_NAME);
         break;
+      case ORDER_TABLE_ITEM_ONE:
+        queryBuilder.setTables(LokobeeDatabaseTable.ORDER_TABLE_NAME);
+
+        // add the Id to original query
+        queryBuilder.appendWhere(LokobeeDatabaseTable.COLUMN_ID + "=" + uri.getLastPathSegment());
+        break;
       default:
-        LoggerUtils.e(TAG, "Unknown URI : " + uri);
+        LoggerUtils.e(TAG, "query Unknown URI : " + uri);
         throw new IllegalArgumentException("Unknown URI : " + uri);
     }
     SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
@@ -108,17 +118,54 @@ public class LokobeeOrderProvider extends ContentProvider {
   }
 
 
+  @Override public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+    int uriType = URI_MATCHER.match(uri);
+    SQLiteDatabase db = mDatabaseHelper.getWritableDatabase();
+    int rowsUpdated = 0;
+    String id;
+    switch (uriType) {
+      case ORDER_TABLE_ALL:
+        rowsUpdated = db.update(LokobeeDatabaseTable.ORDER_TABLE_NAME, values, selection, selectionArgs);
+        break;
+      case ORDER_TABLE_ITEM_ONE:
+        id = uri.getLastPathSegment();
+        if (TextUtils.isEmpty(selection)) {
+          rowsUpdated = db.update(LokobeeDatabaseTable.ORDER_TABLE_NAME, values, LokobeeDatabaseTable.COLUMN_ID + "=" + id, null);
+        } else {
+          rowsUpdated = db.update(LokobeeDatabaseTable.ORDER_TABLE_NAME, values, LokobeeDatabaseTable.COLUMN_ID + "=" + id + "and" + selection,
+              selectionArgs);
+        }
+        break;
+      default:
+        LoggerUtils.e(TAG, "update  Unknown URI : " + uri);
+        throw new IllegalArgumentException("Unknown URI : " + uri);
+    }
+    getContext().getContentResolver().notifyChange(uri, null);
+    return rowsUpdated;
+  }
+
+
   @Nullable @Override public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-    return null;
+    SQLiteDatabase db = mDatabaseHelper.getWritableDatabase();
+    Uri insertUri = null;
+    long id;
+    switch (URI_MATCHER.match(uri)) {
+      case ORDER_TABLE_ALL:
+        id = insertIfNotExists(db, LokobeeDatabaseTable.ORDER_TABLE_NAME, values);
+        if (id >= 0) {
+          insertUri = ContentUris.withAppendedId(ORDER_CONTEXT_URI, id);
+          getContext().getContentResolver().notifyChange(uri, null, false);
+        }
+        break;
+      default:
+        LoggerUtils.e(TAG, "insert  Unsupported URI : " + uri);
+        throw new IllegalArgumentException("Unsupported uri" + uri);
+    }
+    return insertUri;
   }
 
 
   @Override public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-    return 0;
-  }
-
-
-  @Override public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
     return 0;
   }
 }

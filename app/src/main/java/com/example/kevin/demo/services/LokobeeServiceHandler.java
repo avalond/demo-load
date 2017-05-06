@@ -3,11 +3,14 @@ package com.example.kevin.demo.services;
 import com.example.kevin.demo.modle.BaseResponse;
 import com.example.kevin.demo.modle.GetUnFinishedOrderByUser;
 import com.example.kevin.demo.modle.Order;
-import com.example.kevin.demo.network.LokobeeNetFactory;
 import com.example.kevin.demo.network.ConstantType;
+import com.example.kevin.demo.network.LokobeeNetFactory;
 import com.example.kevin.demo.provider.LokobeeOrderProvider;
 import com.example.kevin.demo.utils.LoggerUtils;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -70,8 +73,25 @@ public class LokobeeServiceHandler extends Handler {
   private void processOrderResult(List<Order> orderList) {
     Uri contentUri = getContentUri();
     mContext.getContentResolver().delete(contentUri, null, null);
-    ContentValues contentValues = LokobeeOrderProvider.OrderContentValues(orderList);
-    mContext.getContentResolver().insert(contentUri, contentValues);
+
+    for (Order order : orderList) {
+      ContentValues contentValues = LokobeeOrderProvider.OrderContentValues(order);
+      mContext.getContentResolver().insert(contentUri, contentValues);
+    }
+
+    LoggerUtils.e(TAG, "processOrderResult---->>");
+  }
+
+
+  private List<Order> removeDuplicate(List<Order> orderList) {
+    Set<Order> set = new HashSet<>();
+    List<Order> newlist = new ArrayList<>();
+    for (Order element : orderList) {
+      if (set.add(element)) {
+        newlist.add(element);
+      }
+    }
+    return newlist;
   }
 
 

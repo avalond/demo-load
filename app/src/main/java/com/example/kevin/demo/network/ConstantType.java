@@ -9,5 +9,5 @@ public class ConstantType {
   public static final String SERVER_URL = "https://lokobee.herokuapp.com/graphql/";
 
   public static final String PARAMETERS_ORDER_STRING
-      = "query{getUnfinishedOrderByBuyer{id,totalAmount,seller{logoUrl,name,isLokobeePartner},orderStatus,expectTime}}";
+      = "query{getUnfinishedOrderByBuyer{id,orderStatus,note}}";
 }

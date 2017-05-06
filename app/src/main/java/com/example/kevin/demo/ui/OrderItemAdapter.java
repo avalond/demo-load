@@ -22,9 +22,14 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
   private List<Map<String, String>> mapList;
 
 
-  public OrderItemAdapter(Context context, List<Map<String, String>> mOrderMapList) {
+  public void bindData(List<Map<String, String>> orderListMapList) {
+    this.mapList = orderListMapList;
+  }
+
+
+  public OrderItemAdapter(Context context) {
     this.mContext = context;
-    this.mapList = mOrderMapList;
+
   }
 
 
@@ -43,15 +48,13 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
     // map.put("orderNote", orderNote);
 
     holder.mOrderIdTv.setText(mapList.get(position).get("orderId"));
-    holder.mOrderUUIdtV.setText(mapList.get(position).get("orderUUId"));
-    holder.mTypeTv.setText(mapList.get(position).get("orderType"));
     holder.mOrderStatusTv.setText(mapList.get(position).get("orderStatus"));
     holder.mOrderNoteTv.setText(mapList.get(position).get("orderNote"));
   }
 
 
   @Override public int getItemCount() {
-    LoggerUtils.e(TAG, "order list size---->" + mapList.size());
+    LoggerUtils.d(TAG, "order list size---->" + mapList.size());
     return mapList.size();
   }
 
@@ -71,7 +74,6 @@ public class OrderItemAdapter extends RecyclerView.Adapter<OrderItemAdapter.Orde
       mTypeTv = (TextView) itemView.findViewById(R.id.type);
       mOrderStatusTv = (TextView) itemView.findViewById(R.id.order_status);
       mOrderNoteTv = (TextView) itemView.findViewById(R.id.order_note);
-
     }
   }
 }

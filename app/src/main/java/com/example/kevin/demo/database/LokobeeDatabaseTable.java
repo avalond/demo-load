@@ -15,22 +15,20 @@ public class LokobeeDatabaseTable {
   //
   //// order Colm
   public static final String COLUMN_ID = "_id";//sqlite id
-  public static final String COLUMN_ORDER_id = "id";
-  public static final String COLUMN_UUID = "uuid";
-  public static final String COLUMN_TYPE = "type";
+  public static final String COLUMN_ORDER_ID = "id";
   public static final String COLUMN_ORDER_STATUS = "order_status";
   public static final String COLUMN_ORDER_NOTE = "order_note";
+  public static final String COLUMN_ORDER_EXPECT_TIME = "order_expectTime";
 
   //
   private static final String ORDER_TABLE_CRATE = " ("
       + COLUMN_ID + " integer primary key autoincrement, "
-      + COLUMN_ORDER_id + " text not null, "
-      + COLUMN_UUID + " text, "
-      + COLUMN_TYPE + " text, "
+      + COLUMN_ORDER_ID + " text not null, "
       + COLUMN_ORDER_STATUS + " text, "
       + COLUMN_ORDER_NOTE + " text, "
-      + "UNIQUE(" + COLUMN_UUID + ")"
-      + ");";
+      + COLUMN_ORDER_EXPECT_TIME + " text, "
+      + "UNIQUE(" + COLUMN_ORDER_ID + ")"
+      + " );";
 
   //create table
   private static final String ORDER_TABLE_CREATE_STATEMENT = "create table " + ORDER_TABLE_NAME + ORDER_TABLE_CRATE;
