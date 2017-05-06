@@ -166,6 +166,27 @@ public class LokobeeOrderProvider extends ContentProvider {
 
 
   @Override public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-    return 0;
+    int uriType = URI_MATCHER.match(uri);
+    SQLiteDatabase db = mDatabaseHelper.getWritableDatabase();
+    int rowsDeleted = 0;
+    String id;
+    switch (uriType) {
+      case ORDER_TABLE_ALL:
+        rowsDeleted = db.delete(LokobeeDatabaseTable.ORDER_TABLE_NAME, selection, selectionArgs);
+        break;
+      case ORDER_TABLE_ITEM_ONE:
+        id = uri.getLastPathSegment();
+        if (TextUtils.isEmpty(selection)) {
+          rowsDeleted = db.delete(LokobeeDatabaseTable.ORDER_TABLE_NAME, LokobeeDatabaseTable.COLUMN_ID + "=" + id, null);
+        } else {
+          rowsDeleted = db.delete(LokobeeDatabaseTable.ORDER_TABLE_NAME, LokobeeDatabaseTable.COLUMN_ID + "=" + id + " and " + selection,
+              selectionArgs);
+        }
+        break;
+      default:
+        LoggerUtils.e(TAG, "delete Unknown Uri : " + uri);
+        throw new IllegalArgumentException("Unknown Uri" + uri);
+    }
+    return rowsDeleted;
   }
 }
