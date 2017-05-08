@@ -26,6 +26,7 @@ import android.text.TextUtils;
 public class LokobeeOrderProvider extends ContentProvider {
   private static final String TAG = LokobeeOrderProvider.class.getSimpleName();
   private DatabaseHelper mDatabaseHelper;
+
   private static final String AUTHORITY = "com.example.kevin.demo.provider";
   private static final Uri AUTHPRITY_URI = Uri.parse("content://" + AUTHORITY);
 

@@ -20,6 +20,8 @@ public class LokobeeDatabaseTable {
   public static final String COLUMN_ORDER_NOTE = "order_note";
   public static final String COLUMN_ORDER_EXPECT_TIME = "order_expectTime";
 
+  //time stamp ,request,response,
+
   //
   private static final String ORDER_TABLE_CRATE = " ("
       + COLUMN_ID + " integer primary key autoincrement, "
