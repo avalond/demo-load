@@ -18,6 +18,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     mLayoutManager = new LinearLayoutManager(this);
     mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
     mRecyclerView.setLayoutManager(mLayoutManager);
-    //  mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+    mRecyclerView.setItemAnimator(new DefaultItemAnimator());
     //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
     mRecyclerView.setHasFixedSize(true);
     mAdapter = new OrderCursorAdapter(this, new ItemClick(), null);
@@ -71,11 +72,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         null, //Selection
         null, //SelectionArgs
         null);// SortOrder
-
-    /////
-    LoggerUtils.e(TAG,
-        "uri-->" + loader.getUri() + "--projection--" + loader.getProjection() + "--selection--" + loader.getSelection() + "--selectionArgs--" +
-            loader.getSelectionArgs() + "--sortOrder--" + loader.getSortOrder());
     return loader;
   }
 
